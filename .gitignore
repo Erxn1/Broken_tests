@@ -24,7 +24,7 @@ allure-results/
 allure-report/
 *.xml
 *.html
-
+allure-2.36.0/
 # Папки сборки и временные файлы
 build/
 dist/

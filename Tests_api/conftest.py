@@ -10,7 +10,7 @@ URLS = {
 }
 
 def pytest_addoption(parser):
-    parser.addoption("--env", action="store", default="[prod]",
+    parser.addoption("--env", action="store", default="prod",
                      help="Окружение: prod, staging, preprod")
 
 @pytest.fixture(scope="session")
@@ -33,7 +33,7 @@ def news_client(base_url):
 @pytest.fixture
 def created_news(news_client):
     resp = news_client.create_news("Test Header", "Test Description")
-    assert resp.status_code == 200, f"Failed to create news: {resp.text}"
+    assert resp.status_code == 201, f"Failed to create news: {resp.text}"
     news = resp.json()
     yield news
     del_resp = news_client.delete_news(news["id"])
@@ -41,7 +41,7 @@ def created_news(news_client):
         print(f"Warning: Failed to delete news {news['id']}: {del_resp.text}")
 
 # Хук для Allure
-@pytest.hookimpl(tryfirstTrue)
+@pytest.hookimpl(tryfirst=True)
 def pytest_sessionstart(session):
     env = session.config.getoption("--env")
     base_url = URLS.get(env)
