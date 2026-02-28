@@ -22,7 +22,6 @@ class TestCreateNews:
         assert get_resp.status_code == 200
         assert get_resp.json() == data
 
-        # Очистка
         del_resp = news_client.delete_news(news_id)
         assert del_resp.status_code == 204
 
@@ -34,7 +33,7 @@ class TestCreateNews:
         assert data["header"] == ""
         assert data["description"] == "Описание"
         assert "id" in data
-        #Очистка
+
         del_resp = news_client.delete_news(data["id"])
         assert del_resp.status_code in (200, 204)
 
@@ -46,9 +45,9 @@ class TestCreateNews:
         assert data["header"] == "Заголовок"
         assert data["description"] == ""
         assert "id" in data
-        #Очистка
+
         del_resp = news_client.delete_news(data["id"])
-        assert del_resp.status_code in (200, 204)
+        assert del_resp.status_code == 204
 
 
     @allure.title("Негативный сценарий: отсутствует поле header.")
@@ -85,8 +84,9 @@ class TestCreateNews:
         assert data["header"] == "Заголовок"
         assert data["description"] == "Описание"
         assert "extra" not in data
-        # Очистка
-        news_client.delete_news(data["id"])
+
+        del_resp = news_client.delete_news(data["id"])
+        assert del_resp.status_code == 204
 
     @pytest.mark.parametrize("header,description", [
         ("a" * 256, "норм описание"),
