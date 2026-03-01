@@ -35,7 +35,7 @@ class TestCreateNews:
         assert "id" in data
 
         del_resp = news_client.delete_news(data["id"])
-        assert del_resp.status_code in (200, 204)
+        assert del_resp.status_code == 204
 
     @allure.title("Позитивный сценарий: пустое описание.")
     def test_create_news_empty_description(self, news_client):
@@ -52,9 +52,8 @@ class TestCreateNews:
 
     @allure.title("Негативный сценарий: отсутствует поле header.")
     def test_create_news_missing_header(self, news_client):
-        url = news_client._url("/news")
         payload = {"description": "Описание"}
-        resp = news_client.session.post(url, json=payload)
+        resp = news_client.create_news_raw(payload)
         assert resp.status_code == 400
         error = resp.json()
         assert "message" in error
@@ -62,23 +61,47 @@ class TestCreateNews:
 
     @allure.title("Негативный сценарий: отсутствует поле description.")
     def test_create_news_missing_description(self, news_client):
-        url = news_client._url("/news")
         payload = {"header": "Заголовок"}
-        resp = news_client.session.post(url, json=payload)
+        resp = news_client.create_news_raw(payload)
         assert resp.status_code == 400
         error = resp.json()
         assert "message" in error
         assert "type" in error
 
+    @allure.title("Приведение типов: число в поле header преобразуется в строку")
+    def test_create_news_invalid_header(self, news_client):
+        payload = {"description": "valid", "header": 123}
+        resp = news_client.create_news_raw(payload)
+        assert resp.status_code == 201
+        data = resp.json()
+        assert data["header"] == "123"
+        assert data["description"] == "valid"
+        assert 'id' in data
+
+        del_resp = news_client.delete_news(data["id"])
+        assert del_resp.status_code == 204
+
+    @allure.title("Приведение типов: число в поле description преобразуется в строку")
+    def test_create_news_invalid_description(self, news_client):
+        payload = {"description": 123, "header": "valid"}
+        resp = news_client.create_news_raw(payload)
+        assert resp.status_code == 201
+        data = resp.json()
+        assert data["header"] == "valid"
+        assert data["description"] == "123"
+        assert 'id' in data
+
+        del_resp = news_client.delete_news(data["id"])
+        assert del_resp.status_code == 204
+
     @allure.title("Негативный сценарий: лишние поля игнорируются.")
     def test_create_news_extra_fields(self, news_client):
-        url = news_client._url("/news")
         payload = {
             "header": "Заголовок",
             "description": "Описание",
             "extra": "лишнее поле"
         }
-        resp = news_client.session.post(url, json=payload)
+        resp = news_client.create_news_raw(payload)
         assert resp.status_code == 201
         data = resp.json()
         assert data["header"] == "Заголовок"
@@ -90,14 +113,32 @@ class TestCreateNews:
 
     @pytest.mark.parametrize("header,description", [
         ("a" * 256, "норм описание"),
-        ("норм заголовок", "b" * 1001),
-        ("a" * 256, "b" * 1001)
+        ("норм заголовок", "b" * 256),
+        ("a" * 256, "b" * 256)
     ])
-    @allure.title("Негативный сценарий: превышение максимальной длины поля.")
+    @allure.title("Негативный сценарий: превышение максимальной длины поля. 256 символов")
     def test_create_news_too_long(self, news_client, header, description):
-        payload = {"header": header, "description": description, header: description}
-        resp = news_client.session.post(news_client._url("/news"), json=payload)
+        payload = {"header": header, "description": description}
+        resp = news_client.create_news_raw(payload)
         assert resp.status_code == 400
         error = resp.json()
         assert "message" in error
         assert "type" in error
+
+    @pytest.mark.parametrize("header,description", [
+        ("a" * 255, "норм описание"),
+        ("норм заголовок", "b" * 255),
+        ("a" * 255, "b" * 255)
+    ])
+    @allure.title("Позитивный сценарий: Верхняя граница 255 символов длины поля")
+    def test_create_news_too_long_valid(self, news_client, header, description):
+        payload = {"header": header, "description": description}
+        resp = news_client.create_news_raw(payload)
+        assert resp.status_code == 201
+        data = resp.json()
+        assert data["header"] == header
+        assert data["description"] == description
+        assert 'id' in data
+
+        del_resp = news_client.delete_news(data["id"])
+        assert del_resp.status_code == 204

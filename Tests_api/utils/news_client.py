@@ -22,3 +22,6 @@ class NewsClient(BaseClient):
     def delete_news(self, news_id: int):
         url = self._url(news_detail(news_id))
         return self.session.delete(url)
+
+    def create_news_raw(self, payload: dict):
+        return self.session.post(self._url("/news"), json=payload)
