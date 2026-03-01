@@ -75,6 +75,7 @@ class TestCreateNews:
         assert resp.status_code == 201
         data = resp.json()
         assert data["header"] == "123"
+        assert isinstance(data["header"], str)
         assert data["description"] == "valid"
         assert 'id' in data
 
@@ -89,6 +90,7 @@ class TestCreateNews:
         data = resp.json()
         assert data["header"] == "valid"
         assert data["description"] == "123"
+        assert isinstance(data["description"], str)
         assert 'id' in data
 
         del_resp = news_client.delete_news(data["id"])
