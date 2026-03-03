@@ -4,8 +4,14 @@ import pytest
 from conftest import news_client
 
 
+@allure.epic("Управление новостями")
+@allure.feature("Удаление новостей")
 class TestDeleteNews:
+
     @allure.title("Успешное удаление новости")
+    @allure.story("Позитивный сценарий удаления")
+    @allure.severity(allure.severity_level.CRITICAL)
+    @allure.description("Проверка успешного удаления существующей новости: создаём новость, удаляем её, затем проверяем, что она больше не доступна.")
     def test_delete_valid_news(self, news_client):
 
         create_resp = news_client.create_news("Header", "Description")
@@ -19,20 +25,23 @@ class TestDeleteNews:
         assert get_resp.status_code == 404
 
     @pytest.mark.parametrize("news_id", [
-        999999999,  #Несуществующий id
-        "string", #Строка вместо числа
-        "",       #Пустая строка
+        999999999,
+        "string",
+        "",
         -1,
         0,
         1.5,
-        " 999999999",   # пробел перед числом
-        "999999999  ",   # пробел после
-        "12 3",   # пробел внутри
-        "@#$",    # спецсимволы
-        "null",   # строка "null"
+        " 999999999",
+        "999999999  ",
+        "12 3",
+        "@#$",
+        "null",
     ])
     @allure.title("Негативный сценарий: удаление с невалидным id {news_id}")
-    def test_delete_invalid_id(self, news_client,news_id):
+    @allure.story("Негативные сценарии удаления")
+    @allure.severity(allure.severity_level.CRITICAL)
+    @allure.description("Проверка, что API корректно обрабатывает попытки удаления с некорректными идентификаторами (несуществующий id, строка, спецсимволы и т.д.).")
+    def test_delete_invalid_id(self, news_client, news_id):
         del_resp = news_client.delete_news(news_id)
         assert del_resp.status_code == 404
         error = del_resp.json()

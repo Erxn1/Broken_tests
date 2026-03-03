@@ -1,9 +1,16 @@
 import allure
 import pytest
 
+
+@allure.epic("Управление новостями")
+@allure.feature("Получение новостей")
 @pytest.mark.usefixtures("prepared_news")
 class TestGetNews:
+
     @allure.title("При запросе с валидными параметрами возвращается список новостей")
+    @allure.story("Позитивная проверка структуры списка")
+    @allure.severity(allure.severity_level.CRITICAL)
+    @allure.description("Проверяем, что ручка возвращает 200 OK, тело — список объектов новостей, каждый объект содержит id, header, description с корректными типами.")
     def test_get_news_test(self, news_client):
         size = 10
         resp = news_client.get_news_list(0, size)
@@ -28,6 +35,10 @@ class TestGetNews:
         (0, -5, 400),
         (0, 0, 400),
     ])
+    @allure.title("Проверка get_news_list с параметрами page={page}, size={size} -> ожидаем {expected_status}")
+    @allure.story("Параметризованная проверка граничных значений")
+    @allure.severity(allure.severity_level.NORMAL)
+    @allure.description("Тестируем ручку получения списка новостей с различными комбинациями page и size, включая невалидные значения. Проверяем соответствие статус-кода и, при успехе, длину списка.")
     def test_get_news_list_parametrize(self, news_client, page, size, expected_status):
         resp = news_client.get_news_list(page, size)
         assert resp.status_code == expected_status
