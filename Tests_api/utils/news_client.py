@@ -1,14 +1,11 @@
 from utils.base_client import BaseClient
 from endpoints import news_list, news_detail
 
-
-# Раздел Новости
-
 class NewsClient(BaseClient):
     def create_news(self, header: str, description: str):
         url = self._url(news_list())
         payload = {"header": header, "description": description}
-        return self.session.post(url, json=payload)
+        return self._post_json(url, json=payload)
 
     def get_news_list(self, page: int = 0, size: int = 10):
         url = self._url(news_list())
@@ -24,4 +21,4 @@ class NewsClient(BaseClient):
         return self.session.delete(url)
 
     def create_news_raw(self, payload: dict):
-        return self.session.post(self._url("/news"), json=payload)
+        return self._post_json(self._url(news_list()), json=payload)

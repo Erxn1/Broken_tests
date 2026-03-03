@@ -2,6 +2,8 @@ import os
 import pytest
 from datetime import datetime
 from utils.news_client import NewsClient
+from pathlib import Path
+from utils.tshirts_client import TshirtClient
 
 URLS = {
     "prod": "http://95.81.115.73:8085",
@@ -53,6 +55,30 @@ def prepared_news(news_client):
     yield created_ids
     for news_id in created_ids:
         news_client.delete_news(news_id)
+
+# Фикстуры для футболок
+@pytest.fixture
+def test_picture_path():
+    return str(Path(__file__).parent / "resources" / "test.jpg")
+
+@pytest.fixture
+def tshirt_client(base_url):
+    return TshirtClient(base_url)
+
+@pytest.fixture
+def created_tshirt(tshirt_client):
+    dto = {
+        "name": "Auto Tshirt",
+        "color": "red",
+        "size": "L",
+        "price": 1000,
+        "article": "FIXTURE001"
+    }
+    resp = tshirt_client.create_tshirt(dto)
+    assert resp.status_code == 201
+    tshirt = resp.json()
+    yield tshirt
+    tshirt_client.delete_tshirt(tshirt["id"])
 
 # Хук для Allure
 @pytest.hookimpl(tryfirst=True)
