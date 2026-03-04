@@ -12,8 +12,11 @@ def news_detail(news_id: int):
 # Раздел с футболками
 BASE_TSHIRT_PATH = "/t-shirt"
 
-def tshirt_list():
+def tshirt_create():
     return BASE_TSHIRT_PATH
+
+def tshirt_list_all():
+    return f"{BASE_TSHIRT_PATH}/all"
 
 def tshirt_detail(tshirt_id: int):
     return f"{BASE_TSHIRT_PATH}/{tshirt_id}"

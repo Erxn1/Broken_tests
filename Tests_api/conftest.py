@@ -1,4 +1,6 @@
 import os
+import uuid
+
 import pytest
 from datetime import datetime
 from utils.news_client import NewsClient
@@ -72,13 +74,20 @@ def created_tshirt(tshirt_client):
         "color": "red",
         "size": "L",
         "price": 1000,
-        "article": "FIXTURE001"
+        "article": f"FIXTURE_{uuid.uuid4().hex[:8]}",
+        "material": "cotton",
+        "countryOfProduction": "China",
+        "image": "",
+        "description": "fixture"
     }
     resp = tshirt_client.create_tshirt(dto)
-    assert resp.status_code == 201
+    assert resp.status_code == 201, f"Не удалось создать футболку: {resp.text}"
     tshirt = resp.json()
     yield tshirt
-    tshirt_client.delete_tshirt(tshirt["id"])
+    del_resp = tshirt_client.delete_tshirt(tshirt["id"])
+    # Проверку удаления пока не делаем из-за возможного бага, но можно оставить для информации
+    # if del_resp.status_code not in (200, 204):
+    #     print(f"Ошибка удаления футболки {tshirt['id']}: {del_resp.text}")
 
 # Хук для Allure
 @pytest.hookimpl(tryfirst=True)
